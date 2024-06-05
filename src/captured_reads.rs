@@ -65,6 +65,10 @@ impl<K: Eq + Hash + Clone, V: Clone> CapturedReads<K, V> {
         self.incorrect_use
     }
 
+    pub(crate) fn keys(&self) -> impl Iterator<Item = &K> {
+        self.reads.keys().clone().into_iter()
+    }
+
     pub(crate) fn validate_reads(
         &self,
         data_map: &VersionedData<K, V>,

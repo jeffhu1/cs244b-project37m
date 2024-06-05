@@ -280,6 +280,18 @@ where
             scheduler.finish_validation(txn_idx, validation_wave);
             if valid {
                 scheduler.queueing_commits_arm();
+
+                if let Some(keys) = last_input_output.modified_keys(txn_idx) {
+                    for (k, _) in keys {
+                        println!("#[w;{};{:?};{:?}]", txn_idx, incarnation, k);
+                    }
+                }
+
+                last_input_output.read_set(txn_idx).map(|read_set| {
+                    for k in read_set.keys() {
+                        println!("#[r;{};{:?};{:?}]", txn_idx, incarnation, k);
+                    }
+                });
             }
 
             Ok(SchedulerTask::Retry)
