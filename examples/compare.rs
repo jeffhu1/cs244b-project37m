@@ -149,7 +149,7 @@ async fn main() -> anyhow::Result<()> {
         delay: ssd_delay,
     };
 
-    let num_trials = 100;
+    let num_trials = 250;
     println!("Number of trials: {}", num_trials);
     // println!("Starting parallel execution...");
     let parallel_time;
