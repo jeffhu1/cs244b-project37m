@@ -6,12 +6,6 @@ GRAPH_FNAME = "graph.adjlist"
 
 DEBUG = False
 
-G = nx.read_adjlist(GRAPH_FNAME, create_using=nx.DiGraph())
-
-print(G)
-print(G.nodes())
-
-
 # Compute time for node
 class NodeExecutionTimePolicy(object):
     def constant_estimate(node):
@@ -78,6 +72,9 @@ class NodeSelectionPolicies(object):
         else:
             return None
 
+
+def filename_for_simluation(node_selection_policy, node_time_policy):
+    return f"{node_selection_policy.__name__}-{node_time_policy.__name__}"
 
 class Simulator(object):
     def __init__(self, graph: nx.Graph, rollback_penalty: float = 0.50) -> None:
@@ -158,51 +155,39 @@ class Simulator(object):
         return timestep
 
 
-simulator = Simulator(G)
+if __name__ == "__main__":
+    G = nx.read_adjlist(GRAPH_FNAME, create_using=nx.DiGraph())
 
-for node_time_policy in [NodeExecutionTimePolicy.constant_estimate, NodeExecutionTimePolicy.random_estimate]:
-    for node_selection_policy in [
-        NodeSelectionPolicies.greedy_max_depth_width,
-        NodeSelectionPolicies.random_node,
-        NodeSelectionPolicies.next_txn_id_node,
-    ]:
-        
-        timings = {}
-        print("node_time_policy, node_selection_policy")
-        print(node_time_policy.__name__, node_selection_policy.__name__)
+    print(G)
+    print(G.nodes())
 
-        # for parallelism in [1, 2, 3, 4, 5, 6, 7, 8]:
-        for parallelism in [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32]:
-            parallelism = int(parallelism)
-            timings[parallelism] = simulator.simulate(
-                parallelism=parallelism,
-                node_time_policy=node_time_policy,
-                node_selection_policy=node_selection_policy,
-            )
+    simulator = Simulator(G)
 
-        print(timings)
+    for node_time_policy in [NodeExecutionTimePolicy.constant_estimate, NodeExecutionTimePolicy.random_estimate]:
+        for node_selection_policy in [
+            NodeSelectionPolicies.greedy_max_depth_width,
+            NodeSelectionPolicies.random_node,
+            NodeSelectionPolicies.next_txn_id_node,
+        ]:
+            
+            timings = {}
+            print("node_time_policy, node_selection_policy")
+            print(node_time_policy.__name__, node_selection_policy.__name__)
 
-        # Print results to file for plotting
-        with open(f"simulations/{node_time_policy.__name__}-{node_selection_policy.__name__}.csv", "w") as f:
-            f.write("parallelism,time\n")
-            for parallelism in timings:
-                f.write(f"{parallelism},{timings[parallelism]}\n")
+            # for parallelism in [1, 2, 3, 4, 5, 6, 7, 8]:
+            for parallelism in [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32]:
+                parallelism = int(parallelism)
+                timings[parallelism] = simulator.simulate(
+                    parallelism=parallelism,
+                    node_time_policy=node_time_policy,
+                    node_selection_policy=node_selection_policy,
+                )
 
-exit(0)
+            print(timings)
 
-# plot simulated time vs parallelism
-import matplotlib.pyplot as plt
-import seaborn as sns
+            # Print results to file for plotting
+            with open(f"simulations/{filename_for_simluation(node_selection_policy, node_time_policy)}.csv", "w") as f:
+                f.write("parallelism,time\n")
+                for parallelism in timings:
+                    f.write(f"{parallelism},{timings[parallelism]}\n")
 
-# Labels and title using seaborn
-
-sns.set_theme()
-plt.xlabel("Parallelism")
-plt.ylabel("Time (ms)")
-plt.title("Simulated time vs. parallelism")
-
-# plot horizontal line at 125ms
-plt.axhline(y=125, color="y", linestyle="-")
-plt.yscale("log")
-plt.plot(timings.keys(), timings.values())
-plt.show()
