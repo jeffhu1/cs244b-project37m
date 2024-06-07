@@ -1,3 +1,4 @@
+use core::panic;
 use revm::{
     precompile::B256,
     primitives::{AccountInfo, Address, U256},
