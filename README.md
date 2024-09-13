@@ -26,3 +26,10 @@ Profiling:
 ```
 CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --root --release --example simple --features "example_utils"
 ```
+
+
+### Performance 
+
+Compared to a single-threaded REVM instance, Concerto performs 4x faster when running with 6 threads
+
+![TPS vs Parallelism](images/tps_vs_parallelism.jpg)
